@@ -1,0 +1,72 @@
+---
+title: "Data Wrangling Exercise 1"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+```{r}
+
+#Load the data in RStudio
+library(plyr)
+library(tidyr)
+library(dplyr)
+refine_1 <- read.csv("refine_original.csv", header = 0)
+refine_1 = refine_1[-1,]
+head(refine_1)
+```
+
+```{r}
+names(refine_1) <- c("company", "product_code_number", "address", "city", "country", "name")
+head(refine_1)
+```
+
+```{r}
+#Clean up brand names
+refine_1$company <- gsub("^[Pp].*|^[Ff].*", "philips", refine_1$company)
+refine_1$company <- gsub("^[Aa].*", "akzo", refine_1$company)
+refine_1$company <- gsub("^[Vv].*", "van houten", refine_1$company)
+refine_1$company <- gsub("^[Uu].*", "unilever", refine_1$company)
+
+refine_1[1-10, "company"]
+``` 
+
+```{r}
+#Separate product code and number
+refine_1 <- separate(refine_1, product_code_number, 
+         c("product_code", "product_number"), sep = "-")
+head(refine_1)
+
+```
+```{r}
+#Add product categories
+refine_1 <- mutate(refine_1, product_category = ifelse(product_code %in% "p", "Smartphone",                                                     ifelse(product_code %in% "v", "TV",
+                                              ifelse(product_code %in% "x", "Laptop",               
+                                                     ifelse(product_code %in% "q", "Tablet", NA)))))
+
+select(refine_1, product_code, product_category)
+```
+```{r}
+#Add full address for geocoding
+refine_1 <- unite(refine_1, "full_address", address, city, country, sep = ",")
+head(refine_1)
+```
+
+
+```{r}
+#Create dummy variables for company and product category
+refine_1 <- mutate(refine_1, company2 = company)
+
+refine_1 <- refine_1 %>%
+  mutate(company2 = paste0("company_", company2), yesno = 1) %>%
+  spread(company2, yesno, fill = 0)
+
+refine_1 <- mutate(refine_1, product_category2 = product_category)
+
+refine_1 <- refine_1 %>%
+  mutate(product_category2 = paste0("product_", product_category2), yesno = 1) %>%
+  spread(product_category2, yesno, fill = 0)
+
+head(refine_1)
+```
+
