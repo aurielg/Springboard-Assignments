@@ -1,0 +1,46 @@
+---
+title: "Data Wrangling Ex. 2"
+output: html_notebook
+---
+
+```{r}
+#Load data into Rstudio
+titanic <- read.csv("titanic_original.csv", header = TRUE)
+head(titanic) 
+
+```
+
+```{r}
+#Port of embarkation: replace missing values with "S"
+titanic$embarked[which(is.na(titanic$embarked))] <- "S"
+head(titanic$embarked)
+which(is.na(titanic$embarked))
+
+```
+```{r}
+#Age: replace missing values with the mean of the age column
+age_mean <- round(titanic %>% summarise(mean(age, na.rm = T)), digits = 0)
+age_mean
+titanic$age[is.na(titanic$age)] <- age_mean
+which(is.na(titanic$age))
+
+```
+```{r}
+#Lifeboat: replace missing values in boat column with dummy value ("NA")
+titanic$boat <- replace(titanic$boat, titanic$boat == "", NA )
+titanic[1:10, "boat"]
+```
+```{r}
+#Cabin: create new column showing whether or not a cabin number was assigned
+titanic$cabin <- replace(titanic$cabin, titanic$cabin == "", NA)
+
+titanic$has_cabin_number[is.na(titanic$cabin)] <- 0
+titanic$has_cabin_number[!(is.na(titanic$cabin))]<-1
+
+length(titanic$has_cabin_number)
+length(titanic$cabin)
+select(titanic, cabin, has_cabin_number)
+
+
+```
+
